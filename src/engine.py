@@ -43,11 +43,9 @@ class Trainer:
 
             img = img.to(self.device)
             feature, out = self.model(img)
-            img2 = img2.to(self.device)
-            feature2, out2 = self.model(img2)
 
             label = label.to(self.device)
-            loss = self.criterion2(out, label.squeeze(dim=1))
+            loss = self.criterion(out, label.squeeze(dim=1))
             train_loss_epoch += loss.item()
             loss.backward()
             
@@ -66,8 +64,9 @@ class Trainer:
             for img, label in tqdm(val_loader):
                 img = img.to(self.device)
                 feature, out = self.model(img)
+                
                 label = label.to(self.device)
-                loss = self.criterion2(out, label.squeeze(dim=1))
+                loss = self.criterion(out, label.squeeze(dim=1))
                 val_loss_epoch += loss.item()
 
                 _, predict = out.max(dim=1)

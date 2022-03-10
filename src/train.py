@@ -3,7 +3,6 @@ import torch
 import torch.nn as nn
 from dataset import get_loader, IR_ContrasDataset
 from models.build import build_model
-from losses import ContrastiveLoss
 from engine import Trainer, training_experiment
 from utils import get_config
 
@@ -22,11 +21,11 @@ def train():
 
     model = build_model(cfgs).to(device)
 
-    criterion = ContrastiveLoss().to(device)
+    criterion = torch.nn.CrossEntropyLoss().to(device)
 
     optimizer = torch.optim.AdamW(model.parameters(), lr=cfgs['train']['lr'])
     scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, factor=0.8, patience=3, verbose=True)
-    train_loader, test_loader = get_loader(cfgs, IR_ContrasDataset)
+    train_loader, test_loader = get_loader(cfgs, IR_Dataset)
     trainer = Trainer(model, criterion, optimizer,
                       cfgs['train']["loss_ratio"], cfgs['train']["clip_value"], device=device)
 

@@ -22,7 +22,7 @@ convnext:
 
 # Classifier params
 cls:
-  dims: [768, 128, 2]
+  dims: [768, 128, 9]
   prob: 0.5
 
 # For training process
