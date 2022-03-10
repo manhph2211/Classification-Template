@@ -1,0 +1,4 @@
+test/*
+train/*
+dog-vs-cat-classification.zip
+sample_submission.csv

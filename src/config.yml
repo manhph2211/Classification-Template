@@ -1,0 +1,33 @@
+data:
+  ROOT: '../data'
+  TRAIN_CAT_FOLDER_PATH: '../data/train/train/cats'
+  TRAIN_DOG_FOLDER_PATH: '../data/train/train/dogs'
+  TEST_FOLDER_PATH: '../data/test/test'
+  demo_img_num: 4
+
+  train_val_size: 0.2
+  train_path: '../data/train.json'
+  val_path: '../data/val.json'
+  test_path: '../data/test.json'
+
+  image_size: (112, 112)
+  batch_size: 16
+  num_workers: 2
+
+# Extractors params
+## ConvNeXt configuration
+convnext:
+  depths: [3, 3, 9, 3]
+  dims: [96, 192, 384, 768]
+
+# Classifier params
+cls:
+  dims: [768, 128, 2]
+  prob: 0.5
+
+# For training process
+train:
+  epoch_n: 20
+  lr: 0.0001
+  loss_ratio: 0.1
+  clip_value: 1
