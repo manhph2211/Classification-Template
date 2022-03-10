@@ -1,4 +1,4 @@
-[Dog & cat classification - kaggle](https://www.kaggle.com/c/dog-vs-cat-classification/data)
+IR-Project
 ====
 
 # Introduction
