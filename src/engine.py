@@ -13,7 +13,7 @@ from build import build_model
 
 
 class Trainer:
-    def __init__(self, model, criterion, optimizer, loss_ratio=0.1,
+    def __init__(self, model, criterion, optimizer, ema_model, loss_ratio=0.1,
                  clip_value=1, ckpt='../weights/model.pth', device='cuda'):
         self.model = model
         self.criterion = criterion
@@ -21,6 +21,7 @@ class Trainer:
         self.loss_ratio = loss_ratio
         self.clip_value = clip_value
         self.device = device
+        self.ema_model = ema_model
         self.BEST_LOSS = np.inf
         self.ckpt = ckpt
         self.labels = []
@@ -51,6 +52,7 @@ class Trainer:
             
             nn.utils.clip_grad_value_(self.model.parameters(), clip_value=self.clip_value)
             self.optimizer.step()
+            self.ema_model.update()
 
             _, predict = out.max(dim=1)
             train_acc_epoch.append(accuracy_score(predict.cpu().numpy(), label.cpu().numpy()))
