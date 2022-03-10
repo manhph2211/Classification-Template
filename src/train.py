@@ -22,7 +22,7 @@ def train():
     experiment.log_parameters(cfgs)
 
     model = build_model(cfgs).to(device)
-    ema_model = ModelEmaV2()
+    ema_model = ModelEmaV2(model).to(device)
 
     # criterion = torch.nn.CrossEntropyLoss().to(device)
     criterion = LabelSmoothingCrossEntropy().to(device)

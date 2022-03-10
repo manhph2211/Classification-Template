@@ -52,20 +52,20 @@ class Trainer:
             
             nn.utils.clip_grad_value_(self.model.parameters(), clip_value=self.clip_value)
             self.optimizer.step()
-            self.ema_model.update()
+            self.ema_model.update(self.model)
 
             _, predict = out.max(dim=1)
             train_acc_epoch.append(accuracy_score(predict.cpu().numpy(), label.cpu().numpy()))
         return sum(train_acc_epoch) / len(train_acc_epoch), train_loss_epoch
 
     def val_epoch(self, val_loader):
-        self.model.eval()
+        self.ema_model.eval()
         val_loss_epoch = 0
         val_acc_epoch = []
         with torch.no_grad():
             for img, label in tqdm(val_loader):
                 img = img.to(self.device)
-                feature, out = self.model(img)
+                feature, out = self.ema_model.module(img)
                 
                 label = label.to(self.device)
                 loss = self.criterion(out, label.squeeze(dim=1))
@@ -76,13 +76,12 @@ class Trainer:
                 self.predicts.append(predict.detach().cpu().numpy())
                 val_acc_epoch.append(accuracy_score(predict.cpu().numpy(), label.cpu().numpy()))
                 self.val_loss_epoch = val_loss_epoch
-
             return sum(val_acc_epoch) / len(val_acc_epoch), val_loss_epoch
 
     def save_checkpoint(self, experiment):
         if self.val_loss_epoch < self.BEST_LOSS:
             self.BEST_LOSS = self.val_loss_epoch
-            torch.save(self.model.state_dict(),self.ckpt)
+            torch.save(self.ema_model.module.state_dict(),self.ckpt)
             experiment.log_model("model",self.ckpt)
             experiment.log_confusion_matrix(y_true=[j for sub in self.labels for j in sub],
                                             y_predicted=[j for sub in self.predicts for j in sub])
