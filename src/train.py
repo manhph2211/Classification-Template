@@ -5,7 +5,7 @@ from dataset import get_loader, IR_Dataset
 from models.build import build_model
 from engine import Trainer, training_experiment
 from utils import get_config
-from optimizer import ModelEmaV2 
+from ema import EMA
 from losses import LabelSmoothingCrossEntropy 
 
 
@@ -22,15 +22,14 @@ def train():
     experiment.log_parameters(cfgs)
 
     model = build_model(cfgs).to(device)
-    ema_model = ModelEmaV2(model).to(device)
-
+    ema_model = EMA(model.parameters(), decay_rate=0.995, num_updates=0)
     # criterion = torch.nn.CrossEntropyLoss().to(device)
     criterion = LabelSmoothingCrossEntropy().to(device)
 
     optimizer = torch.optim.AdamW(model.parameters(), lr=cfgs['train']['lr'])
     scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, factor=0.8, patience=3, verbose=True)
     train_loader, test_loader = get_loader(cfgs, IR_Dataset)
-    trainer = Trainer(model, criterion, optimizer, ema_model, cfgs['train']["loss_ratio"], cfgs['train']["clip_value"], device=device)
+    trainer = Trainer(model, criterion, optimizer, ema_model, cfgs['train']["clip_value"], device=device)
 
     training_experiment(train_loader, test_loader, experiment, trainer, cfgs['train']['epoch_n'], scheduler)
     print("DONE!")
