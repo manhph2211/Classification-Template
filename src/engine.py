@@ -13,7 +13,7 @@ from build import build_model
 
 
 class Trainer:
-    def __init__(self, model, criterion, optimizer, loss_ratio=0.1,
+    def __init__(self, model, criterion, optimizer, ema_model, loss_ratio=0.1,
                  clip_value=1, ckpt='../weights/model.pth', device='cuda'):
         self.model = model
         self.criterion = criterion
@@ -21,6 +21,7 @@ class Trainer:
         self.loss_ratio = loss_ratio
         self.clip_value = clip_value
         self.device = device
+        self.ema_model = ema_model
         self.BEST_LOSS = np.inf
         self.ckpt = ckpt
         self.labels = []
@@ -43,31 +44,31 @@ class Trainer:
 
             img = img.to(self.device)
             feature, out = self.model(img)
-            img2 = img2.to(self.device)
-            feature2, out2 = self.model(img2)
 
             label = label.to(self.device)
-            loss = self.criterion2(out, label.squeeze(dim=1))
+            loss = self.criterion(out, label.squeeze(dim=1))
             train_loss_epoch += loss.item()
             loss.backward()
             
             nn.utils.clip_grad_value_(self.model.parameters(), clip_value=self.clip_value)
             self.optimizer.step()
+            self.ema_model.update(self.model)
 
             _, predict = out.max(dim=1)
             train_acc_epoch.append(accuracy_score(predict.cpu().numpy(), label.cpu().numpy()))
         return sum(train_acc_epoch) / len(train_acc_epoch), train_loss_epoch
 
     def val_epoch(self, val_loader):
-        self.model.eval()
+        self.ema_model.eval()
         val_loss_epoch = 0
         val_acc_epoch = []
         with torch.no_grad():
             for img, label in tqdm(val_loader):
                 img = img.to(self.device)
-                feature, out = self.model(img)
+                feature, out = self.ema_model.module(img)
+                
                 label = label.to(self.device)
-                loss = self.criterion2(out, label.squeeze(dim=1))
+                loss = self.criterion(out, label.squeeze(dim=1))
                 val_loss_epoch += loss.item()
 
                 _, predict = out.max(dim=1)
@@ -75,13 +76,12 @@ class Trainer:
                 self.predicts.append(predict.detach().cpu().numpy())
                 val_acc_epoch.append(accuracy_score(predict.cpu().numpy(), label.cpu().numpy()))
                 self.val_loss_epoch = val_loss_epoch
-
             return sum(val_acc_epoch) / len(val_acc_epoch), val_loss_epoch
 
     def save_checkpoint(self, experiment):
         if self.val_loss_epoch < self.BEST_LOSS:
             self.BEST_LOSS = self.val_loss_epoch
-            torch.save(self.model.state_dict(),self.ckpt)
+            torch.save(self.ema_model.module.state_dict(),self.ckpt)
             experiment.log_model("model",self.ckpt)
             experiment.log_confusion_matrix(y_true=[j for sub in self.labels for j in sub],
                                             y_predicted=[j for sub in self.predicts for j in sub])
