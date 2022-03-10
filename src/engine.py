@@ -13,11 +13,10 @@ from build import build_model
 
 
 class Trainer:
-    def __init__(self, model, criterion1, criterion2, optimizer, loss_ratio=0.1,
+    def __init__(self, model, criterion, optimizer, loss_ratio=0.1,
                  clip_value=1, ckpt='../weights/model.pth', device='cuda'):
         self.model = model
-        self.criterion1 = criterion1
-        self.criterion2 = criterion2
+        self.criterion = criterion
         self.optimizer = optimizer
         self.loss_ratio = loss_ratio
         self.clip_value = clip_value
@@ -39,31 +38,24 @@ class Trainer:
         self.model.train()
         train_loss_epoch = 0
         train_acc_epoch = []
-        for img1, label1, img2, label2 in tqdm(train_loader):
+        for img, label in tqdm(train_loader):
             self.optimizer.zero_grad()
 
-            img1 = img1.to(self.device)
-            feature1, out1 = self.model(img1)
-
+            img = img.to(self.device)
+            feature, out = self.model(img)
             img2 = img2.to(self.device)
             feature2, out2 = self.model(img2)
 
-            label1 = label1.to(self.device)
-            label2 = label2.to(self.device)
-
-            label = torch.tensor((label1 == label2),dtype=torch.uint8)
-
-            loss1 = self.criterion1(feature1, feature2, label)
-            loss2 = self.criterion2(out1, label1.squeeze(dim=1))
-            loss = loss1 * self.loss_ratio + loss2
+            label = label.to(self.device)
+            loss = self.criterion2(out, label.squeeze(dim=1))
             train_loss_epoch += loss.item()
-
             loss.backward()
+            
             nn.utils.clip_grad_value_(self.model.parameters(), clip_value=self.clip_value)
             self.optimizer.step()
 
-            _, predict = out1.max(dim=1)
-            train_acc_epoch.append(accuracy_score(predict.cpu().numpy(), label1.cpu().numpy()))
+            _, predict = out.max(dim=1)
+            train_acc_epoch.append(accuracy_score(predict.cpu().numpy(), label.cpu().numpy()))
         return sum(train_acc_epoch) / len(train_acc_epoch), train_loss_epoch
 
     def val_epoch(self, val_loader):
@@ -71,25 +63,17 @@ class Trainer:
         val_loss_epoch = 0
         val_acc_epoch = []
         with torch.no_grad():
-            for img1, label1, img2, label2 in tqdm(val_loader):
-                img1 = img1.to(self.device)
-                feature1, out1 = self.model(img1)
-
-                img2 = img2.to(self.device)
-                feature2, out2 = self.model(img2)
-
-                label1 = label1.to(self.device)
-                label2 = label2.to(self.device)
-                label = torch.tensor((label1 == label2),dtype=torch.uint8)                
-                loss1 = self.criterion1(feature1, feature2, label)
-                loss2 = self.criterion2(out1, label1.squeeze(dim=1))
-                loss = loss1 * self.loss_ratio + loss2
+            for img, label in tqdm(val_loader):
+                img = img.to(self.device)
+                feature, out = self.model(img)
+                label = label.to(self.device)
+                loss = self.criterion2(out, label.squeeze(dim=1))
                 val_loss_epoch += loss.item()
 
-                _, predict = out1.max(dim=1)
-                self.labels.append(label1.squeeze(dim=1).detach().cpu().numpy())
+                _, predict = out.max(dim=1)
+                self.labels.append(label.squeeze(dim=1).detach().cpu().numpy())
                 self.predicts.append(predict.detach().cpu().numpy())
-                val_acc_epoch.append(accuracy_score(predict.cpu().numpy(), label1.cpu().numpy()))
+                val_acc_epoch.append(accuracy_score(predict.cpu().numpy(), label.cpu().numpy()))
                 self.val_loss_epoch = val_loss_epoch
 
             return sum(val_acc_epoch) / len(val_acc_epoch), val_loss_epoch

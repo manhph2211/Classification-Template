@@ -14,9 +14,9 @@ def get_config(yaml_file='./config.yml'):
 
 
 def get_data(data_path, show = True, demo_img_num = 4, col_num = 2):
-    images = glob.glob(os.path.join(data_path,"*.jpg"))
+    images = glob.glob(os.path.join(data_path,"*/*.*"))
     if show:
-        print("There are {0} images in {1} folder".format(len(images), "/".join(data_path.split('/')[-2:])))
+        print("There are {0} images in {1} folder".format(len(images), data_path.split('/')[-2]))
         print("This is a demo of {} images".format(demo_img_num))
 
         rows = demo_img_num//col_num
@@ -41,36 +41,25 @@ def write_json(file,data):
 
 
 def make_data(cfgs):
-    cat_images = get_data(cfgs['data']['TRAIN_CAT_FOLDER_PATH'], show = False)
-    dog_images = get_data(cfgs['data']['TRAIN_DOG_FOLDER_PATH'], show = False)
-    test_images = get_data(cfgs['data']['TEST_FOLDER_PATH'], show = False)
+    train_images = get_data(os.path.join(cfgs['data']['ROOT'], cfgs['data']['TRAIN_FOLDER']), show = False)
+    val_images = get_data(os.path.join(cfgs['data']['ROOT'],cfgs['data']['VAL_FOLDER']), show = True)
 
-    val_images = []
-    train_images = []
-    train_val_images = cat_images + dog_images
-    random.shuffle(train_val_images)
-    for i, image in enumerate(train_val_images):
-        if i+1 <= len(train_val_images) * cfgs['data']['train_val_size']:
-            val_images.append(image)
-        else:
-            train_images.append(image)
+    random.shuffle(train_images)
+    random.shuffle(val_images)
+
     write_json(cfgs['data']['train_path'], train_images)
     write_json(cfgs['data']['val_path'], val_images)
-    write_json(cfgs['data']['test_path'], test_images)
 
 
-def get_label(name):
-    lookup = {'dogs': 1, 'cats': 0}
+def get_label(path):
+    lookup = {str(k): k for k in range(1,10)}
     try:
-        return lookup[name.split('/')[-2]]
+        return lookup[path.split('/')[-2]] - 1
     except:
-        return name.split('/')[-1]
+        return None
 
 
 if __name__=='__main__':
     cfgs = get_config()
-    get_data(cfgs['data']['TRAIN_CAT_FOLDER_PATH'], False, cfgs['data']['demo_img_num'])
-    get_data(cfgs['data']['TRAIN_DOG_FOLDER_PATH'], False, cfgs['data']['demo_img_num'])
-    get_data(cfgs['data']['TEST_FOLDER_PATH'], False, cfgs['data']['demo_img_num'])
     make_data(cfgs)
 

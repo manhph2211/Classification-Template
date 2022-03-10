@@ -1,4 +1,2 @@
-test/*
-train/*
-dog-vs-cat-classification.zip
-sample_submission.csv
+FOLD_1/
+FOLD_1-20220310T071243Z-001.zip

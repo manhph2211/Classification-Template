@@ -1,18 +1,18 @@
 data:
-  ROOT: '../data'
-  TRAIN_CAT_FOLDER_PATH: '../data/train/train/cats'
-  TRAIN_DOG_FOLDER_PATH: '../data/train/train/dogs'
-  TEST_FOLDER_PATH: '../data/test/test'
+  ROOT: '../data/FOLD_1'
+  TRAIN_FOLDER: 'train/'
+  VAL_FOLDER: 'test/'
   demo_img_num: 4
 
   train_val_size: 0.2
   train_path: '../data/train.json'
   val_path: '../data/val.json'
-  test_path: '../data/test.json'
 
-  image_size: (112, 112)
-  batch_size: 16
-  num_workers: 2
+  image_size: (112, 224)
+  batch_size: 64
+  num_workers: 4
+
+  pix_thres: 60
 
 # Extractors params
 ## ConvNeXt configuration

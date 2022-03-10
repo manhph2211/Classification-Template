@@ -15,20 +15,19 @@ def train():
         api_key = f.read()
     experiment = Experiment(
         api_key = api_key,
-        project_name = "Dog Cat Classification",
+        project_name = "IR Project",
         workspace = "maxph2211",
     )
     experiment.log_parameters(cfgs)
 
     model = build_model(cfgs).to(device)
 
-    criterion1 = ContrastiveLoss().to(device)
-    criterion2 = nn.CrossEntropyLoss().to(device)
+    criterion = ContrastiveLoss().to(device)
 
     optimizer = torch.optim.AdamW(model.parameters(), lr=cfgs['train']['lr'])
     scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, factor=0.8, patience=3, verbose=True)
     train_loader, test_loader = get_loader(cfgs, IR_ContrasDataset)
-    trainer = Trainer(model, criterion1, criterion2, optimizer,
+    trainer = Trainer(model, criterion, optimizer,
                       cfgs['train']["loss_ratio"], cfgs['train']["clip_value"], device=device)
 
     training_experiment(train_loader, test_loader, experiment, trainer, cfgs['train']['epoch_n'], scheduler)
