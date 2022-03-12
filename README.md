@@ -11,6 +11,7 @@ IR-Project
 
 ```
 comet_ml
+timm
 opencv-python
 torch
 torchvision
