@@ -24,7 +24,7 @@ torchvision
 
 # Usage
 
-- First, set the value of `ROOT` in config file so that you can train the case(Fold_i) you want.
+- First, set the value of `ROOT` in config file `config.yml` so that you can train the case(Fold_i) you want.
 
 - Then, for experimental logging info, I used framework `comet_ml`. We need to create a file called `experiment_apikey.txt`. This file will just contain your api_key that the main website of `comet_ml` provides you when you create your own account.
 
