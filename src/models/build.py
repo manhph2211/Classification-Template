@@ -8,6 +8,7 @@ sys.path.append('../src')
 from convnext import build_extractor
 from head import Classifier
 from utils import get_config
+from efficientnet_pytorch import EfficientNet
 
 
 class Model(nn.Module):
@@ -28,6 +29,11 @@ def build_model(cfgs, pretrained=False, **kwargs):
     head = Classifier(cfgs)
 
     return Model(extractor, head)
+
+
+def effi():
+    model = EfficientNet.from_pretrained('efficientnet-b0', num_classes=9)
+    return model
 
 
 if __name__ == '__main__':
