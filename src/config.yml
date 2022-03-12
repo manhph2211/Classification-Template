@@ -28,6 +28,6 @@ cls:
 # For training process
 train:
   epoch_n: 50
-  lr: 0.0001
+  lr: 0.0002
   loss_ratio: 0.1
   clip_value: 1
