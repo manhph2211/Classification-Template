@@ -12,11 +12,12 @@ from build import build_model
 
 
 class Trainer:
-    def __init__(self, model, criterion, optimizer, ema_model,
+    def __init__(self, model, criterion, optimizer, ema_model, loss_ratio=0.1,
                  clip_value=1, ckpt='../weights/model.pth', device='cuda'):
         self.model = model
         self.criterion = criterion
         self.optimizer = optimizer
+        self.loss_ratio = loss_ratio
         self.clip_value = clip_value
         self.device = device
         self.ema_model = ema_model
@@ -43,7 +44,7 @@ class Trainer:
             self.optimizer.zero_grad()
 
             img = img.to(self.device)
-            feature, out = self.model(img)
+            feature, out = None, self.model(img)
 
             label = label.to(self.device)
             loss = self.criterion(out, label.squeeze(dim=1))
@@ -67,7 +68,7 @@ class Trainer:
         with torch.no_grad():
             for img, label in tqdm(val_loader):
                 img = img.to(self.device)
-                feature, out = self.model(img)
+                feature, out = None, self.model(img)
                 
                 label = label.to(self.device)
                 loss = self.criterion(out, label.squeeze(dim=1))

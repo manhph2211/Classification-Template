@@ -6,6 +6,7 @@ from utils import read_json, get_label, get_config
 import cv2
 from torchvision import  transforms
 import matplotlib.pyplot as plt
+import random 
 
 
 class IR_Dataset(Dataset):
@@ -14,7 +15,6 @@ class IR_Dataset(Dataset):
         self.mode = mode
         self.data_path = cfgs['data'][mode+'_path']
         self.data = read_json(self.data_path)
-        self.cfgs['data']['image_size'] = (112, 224)
 
     def __getitem__(self, item):
         image_path = self.data[item]
@@ -35,8 +35,8 @@ class IR_ContrasDataset(Dataset):
     def __getitem__(self, item):
         image_path_1 = self.data[item]
         image_path_2 = self.data[item-2]
-        img1, label1 = process(image_path_1, self.cfgs['data']['image_size'])
-        img2, label2 = process(image_path_2, self.cfgs['data']['image_size'])
+        img1, label1 = process(image_path_1, self.cfgs)
+        img2, label2 = process(image_path_2, self.cfgs)
         return img1, label1, img2, label2
 
     def __len__(self):
@@ -45,10 +45,11 @@ class IR_ContrasDataset(Dataset):
 
 def process(image_path, cfgs):
     label = get_label(image_path)
-    img = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)
-    img[img < cfgs['data']['pix_thres']] = 0 
-    img = cv2.equalizeHist(img)
-    img = cv2.resize(img, cfgs['data']['image_size'])
+    img = cv2.imread(image_path)#, cv2.IMREAD_GRAYSCALE)
+    thres = random.choice(list(range(0,15)))
+    img[img < thres] = 0# cfgs['data']['pix_thres']] = 0 
+    # img = cv2.equalizeHist(img)
+    img = cv2.resize(img, (120, 160)) #cfgs['data']['image_size'])
     img = transform(img)
     label = torch.LongTensor([int(label)])
     return img, label
@@ -59,8 +60,8 @@ def transform(image):
         [transforms.ToTensor(),
          transforms.Normalize((0.5), (0.5,)),
          transforms.RandomRotation(10),
-         transforms.RandomHorizontalFlip(p=0.1),
-         transforms.RandomAutocontrast(p=0.5),
+         transforms.RandomHorizontalFlip(p=0.2),
+         transforms.RandomAutocontrast(p=0.2),
         #  transforms.RandomCrop(224),
          ]
     )(image)
