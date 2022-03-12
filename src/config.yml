@@ -8,7 +8,7 @@ data:
   train_path: '../data/train.json'
   val_path: '../data/val.json'
 
-  image_size: (112, 224)
+  image_size: (120, 160)
   batch_size: 64
   num_workers: 4
 

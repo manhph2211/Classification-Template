@@ -80,8 +80,8 @@ class EfficientNetSpp(nn.Module):
             nn.ReLU(), 
             nn.BatchNorm2d(256)
         )
-        self.spp = SPP([1, 2, 3, 4])
-        self.fc = nn.Linear(7680, num_classes)
+        self.spp = SPP([1, 2, 3])
+        self.fc = nn.Linear(3584, num_classes)
 
     def forward(self, x):
         x = self.base(x)
