@@ -74,7 +74,7 @@ class EfficientNetSpp(nn.Module):
                 self.base.add_module(name, Identity())
             if isinstance(layer, nn.AdaptiveAvgPool2d):
                 self.base.add_module(name, Identity())
-        
+                
         self.proj = nn.Sequential(
             nn.Conv2d(1280, 256, kernel_size=1),
             nn.ReLU(), 
