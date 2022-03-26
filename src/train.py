@@ -21,9 +21,9 @@ def train():
     )
     experiment.log_parameters(cfgs)
 
-    # model = effi().to(device)
+    model = effi().to(device)
     # model = build_model(cfgs).to(device)
-    model = EfficientNetSpp().to(device)
+    # model = EfficientNetSpp().to(device)
     ema_model = EMA(model.parameters(), decay_rate=0.995, num_updates=0)
     # criterion = torch.nn.CrossEntropyLoss().to(device)
     criterion = LabelSmoothingCrossEntropy().to(device)

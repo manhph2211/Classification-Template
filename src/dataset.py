@@ -1,7 +1,6 @@
 import yaml
 import torch
 from torch.utils.data import Dataset, DataLoader
-import glob
 from utils import read_json, get_label, get_config
 import cv2
 from torchvision import  transforms
